@@ -1,34 +1,18 @@
-# Interview Preparation Tracker
+# 🎯 Interview Preparation Tracker
 
-A web-based Interview Preparation Tracker developed using **Python, Streamlit, and MySQL**. This application helps users organize and manage their interview preparation activities through a simple and user-friendly interface.
+A Streamlit + MySQL project for interview preparation.
 
-## 🚀 Project Overview
+## Features
 
-The Interview Preparation Tracker is designed to make interview preparation easier by providing a centralized platform to organize preparation activities and track progress.
+- Dashboard
+- Question bank
+- Python / SQL / Java / AIML / HR questions
+- Practice sessions
+- Mock interviews
+- Progress tracking
+- MySQL database
 
-The application uses Python for backend logic, Streamlit for the user interface, and MySQL for database management.
-
-## ✨ Features
-
-- User-friendly and interactive interface.
-- Organize interview preparation activities.
-- Manage preparation data efficiently.
-- MySQL database integration.
-- Python-based backend functionality.
-- Modular application structure using Streamlit pages.
-
-## 🛠️ Technologies Used
-
-| Technology | Purpose |
-|---|---|
-| Python | Backend Development |
-| Streamlit | User Interface |
-| MySQL | Database Management |
-| SQL | Database Queries |
-| VS Code | Development Environment |
-| Git & GitHub | Version Control |
-
-## 📂 Project Structure
+## Project Structure
 
 ```text
 Interview_Preparation_Tracker/
@@ -36,67 +20,67 @@ Interview_Preparation_Tracker/
 ├── app.py
 ├── database.py
 ├── requirements.txt
-├── pages/
-│   └── Streamlit application pages
-└── README.md
+├── README.md
+└── pages/
+    ├── 1_Questions.py
+    ├── 2_Practice.py
+    ├── 3_Mock_Interview.py
+    └── 4_Progress.py
 ```
 
-## ⚙️ Installation and Setup
+## 1. Create the database
 
-### 1. Clone the Repository
+Open MySQL and run:
 
-```bash
-git clone https://github.com/chittemireddysravanthi-debug/Interview_Preparation_Tracker.git
+```sql
+CREATE DATABASE interview_tracker;
 ```
 
-### 2. Navigate to the Project Folder
+## 2. Check database password
 
-```bash
-cd Interview_Preparation_Tracker
+Open `database.py` and update:
+
+```python
+DB_CONFIG = {
+    "host": "localhost",
+    "user": "root",
+    "password": "YOUR_MYSQL_PASSWORD",
+    "database": "interview_tracker",
+}
 ```
 
-### 3. Create a Virtual Environment
+## 3. Install packages
 
-```bash
-python -m venv venv
+```powershell
+py -m pip install -r requirements.txt
 ```
 
-### 4. Activate the Virtual Environment
+## 4. Test MySQL
 
-For Windows:
-
-```bash
-venv\Scripts\activate
+```powershell
+py database.py
 ```
 
-### 5. Install Dependencies
+You should see:
 
-```bash
-python -m pip install -r requirements.txt
+```text
+MySQL connection successful!
+Database setup completed successfully!
 ```
 
-### 6. Configure MySQL
+## 5. Run Streamlit
 
-Make sure MySQL is installed and running. Configure the database connection details in `database.py` according to your local MySQL setup.
-
-### 7. Run the Application
-
-```bash
-streamlit run app.py
+```powershell
+py -m streamlit run app.py
 ```
 
-The application will open in your default web browser.
+The app will open in your browser.
 
-## 🎯 Project Objective
+## Default user
 
-The main objective of this project is to develop a simple and efficient platform that helps users organize their interview preparation while gaining practical experience in Python programming, database integration, and web application development.
+The application automatically creates:
 
-## 👩‍💻 Developed By
+- Email: test@gmail.com
+- Password: test123
 
-**Sravanthi Chittemreddy**
-
-- GitHub: [chittemireddysravanthi-debug](https://github.com/chittemireddysravanthi-debug)
-
----
-
-⭐ If you find this project useful, feel free to explore the repository!
+This is only for the current simple demo version. For a production application, passwords should be securely hashed.

@@ -1,30 +1,50 @@
+
+import streamlit as st
 import mysql.connector
 from mysql.connector import Error
 
-DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "NewPassword123!",
-    "database": "interview_tracker",
-}
 
+# ==========================================
+# DATABASE CONNECTION
+# ==========================================
 
 def create_connection():
     try:
-        connection = mysql.connector.connect(**DB_CONFIG)
+        db_config = st.secrets["mysql"]
+
+        connection = mysql.connector.connect(
+            host=db_config["host"],
+            user=db_config["user"],
+            password=db_config["password"],
+            database=db_config["database"],
+            port=int(db_config.get("port", 3306)),
+            connection_timeout=10
+        )
+
         if connection.is_connected():
             return connection
+
     except Error as e:
         print("Database connection error:", e)
+
+    except Exception as e:
+        print("Configuration error:", e)
+
     return None
 
 
+# ==========================================
+# CREATE DATABASE TABLES
+# ==========================================
+
 def create_tables():
     connection = create_connection()
+
     if connection is None:
         return False
 
     cursor = connection.cursor()
+
     try:
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
@@ -95,20 +115,32 @@ def create_tables():
         print("Error creating tables:", e)
         connection.rollback()
         return False
+
     finally:
         cursor.close()
         connection.close()
 
 
+# ==========================================
+# DEFAULT USER
+# ==========================================
+
 def get_or_create_default_user():
     connection = create_connection()
+
     if connection is None:
         return None
 
     cursor = connection.cursor(dictionary=True)
+
     try:
         email = "test@gmail.com"
-        cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+
+        cursor.execute(
+            "SELECT id FROM users WHERE email = %s",
+            (email,)
+        )
+
         user = cursor.fetchone()
 
         if user:
@@ -121,6 +153,7 @@ def get_or_create_default_user():
             """,
             ("Test User", email, "test123"),
         )
+
         connection.commit()
         return cursor.lastrowid
 
@@ -128,17 +161,24 @@ def get_or_create_default_user():
         print("Error creating default user:", e)
         connection.rollback()
         return None
+
     finally:
         cursor.close()
         connection.close()
 
 
+# ==========================================
+# USER REGISTRATION
+# ==========================================
+
 def add_user(name, email, password):
     connection = create_connection()
+
     if connection is None:
         return False
 
     cursor = connection.cursor()
+
     try:
         cursor.execute(
             """
@@ -147,23 +187,32 @@ def add_user(name, email, password):
             """,
             (name, email, password),
         )
+
         connection.commit()
         return True
+
     except Error as e:
         print("Error adding user:", e)
         connection.rollback()
         return False
+
     finally:
         cursor.close()
         connection.close()
 
 
+# ==========================================
+# USER LOGIN
+# ==========================================
+
 def get_user(email, password):
     connection = create_connection()
+
     if connection is None:
         return None
 
     cursor = connection.cursor(dictionary=True)
+
     try:
         cursor.execute(
             """
@@ -173,21 +222,30 @@ def get_user(email, password):
             """,
             (email, password),
         )
+
         return cursor.fetchone()
+
     except Error as e:
         print("Error checking user:", e)
         return None
+
     finally:
         cursor.close()
         connection.close()
 
 
+# ==========================================
+# ADD QUESTIONS
+# ==========================================
+
 def add_question(question, category, difficulty="Easy", answer=""):
     connection = create_connection()
+
     if connection is None:
         return False
 
     cursor = connection.cursor()
+
     try:
         cursor.execute(
             """
@@ -196,23 +254,32 @@ def add_question(question, category, difficulty="Easy", answer=""):
             """,
             (question, category, difficulty, answer),
         )
+
         connection.commit()
         return True
+
     except Error as e:
         print("Error adding question:", e)
         connection.rollback()
         return False
+
     finally:
         cursor.close()
         connection.close()
 
 
+# ==========================================
+# GET QUESTIONS
+# ==========================================
+
 def get_questions(category=None):
     connection = create_connection()
+
     if connection is None:
         return []
 
     cursor = connection.cursor(dictionary=True)
+
     try:
         if category and category != "All":
             cursor.execute(
@@ -224,25 +291,37 @@ def get_questions(category=None):
                 """,
                 (category,),
             )
+
         else:
-            cursor.execute("SELECT * FROM questions ORDER BY id DESC")
+            cursor.execute(
+                "SELECT * FROM questions ORDER BY id DESC"
+            )
+
         return cursor.fetchall()
+
     except Error as e:
         print("Error getting questions:", e)
         return []
+
     finally:
         cursor.close()
         connection.close()
 
 
+# ==========================================
+# ADD PRACTICE SESSION
+# ==========================================
+
 def add_practice_session(
     user_id, category, questions_attempted, questions_correct, score
 ):
     connection = create_connection()
+
     if connection is None:
         return False
 
     cursor = connection.cursor()
+
     try:
         cursor.execute(
             """
@@ -252,23 +331,32 @@ def add_practice_session(
             """,
             (user_id, category, questions_attempted, questions_correct, score),
         )
+
         connection.commit()
         return True
+
     except Error as e:
         print("Error saving practice session:", e)
         connection.rollback()
         return False
+
     finally:
         cursor.close()
         connection.close()
 
 
+# ==========================================
+# GET PRACTICE SESSIONS
+# ==========================================
+
 def get_practice_sessions(user_id):
     connection = create_connection()
+
     if connection is None:
         return []
 
     cursor = connection.cursor(dictionary=True)
+
     try:
         cursor.execute(
             """
@@ -279,24 +367,37 @@ def get_practice_sessions(user_id):
             """,
             (user_id,),
         )
+
         return cursor.fetchall()
+
     except Error as e:
         print("Error getting practice sessions:", e)
         return []
+
     finally:
         cursor.close()
         connection.close()
 
 
+# ==========================================
+# ADD MOCK INTERVIEW
+# ==========================================
+
 def add_mock_interview(
-    user_id, interview_type, questions_attempted,
-    questions_correct, score, feedback
+    user_id,
+    interview_type,
+    questions_attempted,
+    questions_correct,
+    score,
+    feedback
 ):
     connection = create_connection()
+
     if connection is None:
         return False
 
     cursor = connection.cursor()
+
     try:
         cursor.execute(
             """
@@ -306,27 +407,40 @@ def add_mock_interview(
             VALUES (%s, %s, %s, %s, %s, %s)
             """,
             (
-                user_id, interview_type, questions_attempted,
-                questions_correct, score, feedback
+                user_id,
+                interview_type,
+                questions_attempted,
+                questions_correct,
+                score,
+                feedback
             ),
         )
+
         connection.commit()
         return True
+
     except Error as e:
         print("Error saving mock interview:", e)
         connection.rollback()
         return False
+
     finally:
         cursor.close()
         connection.close()
 
 
+# ==========================================
+# GET MOCK INTERVIEWS
+# ==========================================
+
 def get_mock_interviews(user_id):
     connection = create_connection()
+
     if connection is None:
         return []
 
     cursor = connection.cursor(dictionary=True)
+
     try:
         cursor.execute(
             """
@@ -337,23 +451,36 @@ def get_mock_interviews(user_id):
             """,
             (user_id,),
         )
+
         return cursor.fetchall()
+
     except Error as e:
         print("Error getting mock interviews:", e)
         return []
+
     finally:
         cursor.close()
         connection.close()
 
 
+# ==========================================
+# ADD PROGRESS
+# ==========================================
+
 def add_progress(
-    user_id, topic, completed_questions, correct_answers, score
+    user_id,
+    topic,
+    completed_questions,
+    correct_answers,
+    score
 ):
     connection = create_connection()
+
     if connection is None:
         return False
 
     cursor = connection.cursor()
+
     try:
         cursor.execute(
             """
@@ -363,23 +490,32 @@ def add_progress(
             """,
             (user_id, topic, completed_questions, correct_answers, score),
         )
+
         connection.commit()
         return True
+
     except Error as e:
         print("Error saving progress:", e)
         connection.rollback()
         return False
+
     finally:
         cursor.close()
         connection.close()
 
 
+# ==========================================
+# GET PROGRESS
+# ==========================================
+
 def get_progress(user_id):
     connection = create_connection()
+
     if connection is None:
         return []
 
     cursor = connection.cursor(dictionary=True)
+
     try:
         cursor.execute(
             """
@@ -390,17 +526,25 @@ def get_progress(user_id):
             """,
             (user_id,),
         )
+
         return cursor.fetchall()
+
     except Error as e:
         print("Error getting progress:", e)
         return []
+
     finally:
         cursor.close()
         connection.close()
 
 
+# ==========================================
+# DASHBOARD STATISTICS
+# ==========================================
+
 def get_dashboard_stats(user_id):
     connection = create_connection()
+
     empty = {
         "total_questions": 0,
         "practice_sessions": 0,
@@ -412,26 +556,45 @@ def get_dashboard_stats(user_id):
         return empty
 
     cursor = connection.cursor(dictionary=True)
+
     try:
-        cursor.execute("SELECT COUNT(*) AS total FROM questions")
+        cursor.execute(
+            "SELECT COUNT(*) AS total FROM questions"
+        )
+
         total_questions = cursor.fetchone()["total"]
 
         cursor.execute(
-            "SELECT COUNT(*) AS total FROM practice_sessions WHERE user_id = %s",
+            """
+            SELECT COUNT(*) AS total
+            FROM practice_sessions
+            WHERE user_id = %s
+            """,
             (user_id,),
         )
+
         practice_sessions = cursor.fetchone()["total"]
 
         cursor.execute(
-            "SELECT COUNT(*) AS total FROM mock_interviews WHERE user_id = %s",
+            """
+            SELECT COUNT(*) AS total
+            FROM mock_interviews
+            WHERE user_id = %s
+            """,
             (user_id,),
         )
+
         mock_interviews = cursor.fetchone()["total"]
 
         cursor.execute(
-            "SELECT AVG(score) AS average FROM practice_sessions WHERE user_id = %s",
+            """
+            SELECT AVG(score) AS average
+            FROM practice_sessions
+            WHERE user_id = %s
+            """,
             (user_id,),
         )
+
         average_score = cursor.fetchone()["average"] or 0
 
         return {
@@ -440,13 +603,19 @@ def get_dashboard_stats(user_id):
             "mock_interviews": mock_interviews,
             "average_score": round(float(average_score), 2),
         }
+
     except Error as e:
         print("Error getting dashboard statistics:", e)
         return empty
+
     finally:
         cursor.close()
         connection.close()
 
+
+# ==========================================
+# DATABASE TEST
+# ==========================================
 
 if __name__ == "__main__":
     print("=" * 50)
@@ -464,8 +633,10 @@ if __name__ == "__main__":
             user_id = get_or_create_default_user()
             print("Default user ID:", user_id)
             print("Database setup completed successfully!")
+
         else:
             print("Table creation failed.")
+
     else:
         print("MySQL connection failed!")
-        print("Check MySQL username, password and database.")
+        print("Check Streamlit Secrets and database settings.")
